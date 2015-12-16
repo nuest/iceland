@@ -28,10 +28,15 @@ The branches ``master`` and ``develop`` are protected in iceland, therefore chan
 Note: It is important to call `release:perform` **after** the changes are pushed to the actual branches as the plugin will checkout these.
 
 ```sh
+# clean up whatever is left
+mvn release:clean
+
 # first develop
 git checkout develop
 # pull latest changes
-git pull --ff upstream/develop
+git pull --ff upstream develop
+# also from master... since we have to create a PR to get stuff into master, the master should now be one commit further than the last release tag
+git pull --ff upstream master
 # create a release branch
 git checkout -b release/develop
 # push it to remote
@@ -42,8 +47,9 @@ mvn release:prepare
 # push the changes
 git push origin
 
-# now master...
+# now master
 git checkout master
+git pull --ff-only upstream master
 # create a second release branch
 git checkout -b release/master
 # set it to the right commit
@@ -58,11 +64,15 @@ git push -u origin release/master
 # remove the remote release branches
 git push origin --delete release/master release/develop
 
+# some local housekeeping for develop
+git checkout develop
+git pull --ff-only upstream develop
+
 # back to master
 git checkout master
 #  pull latest changes (inkluding the actual release)
-git pull --ff upstream/master
-# push it to remote
+git pull --ff-only upstream master
+# push it to your own fork
 git push origin
 # publish the release
 mvn release:perform -P sign
